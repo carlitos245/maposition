@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <base href="https://socialmarkermap.com/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendFinder - Retrouvez vos amis</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .friend-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="controls">
+    <button class="btn" id="findFriends">Trouver des amis</button>
+    <button class="btn" id="shareLocation">Partager ma position</button>
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCE6cl81nDiK-nNPy60vzwOxkswvfc1CCM"></script>
+<script>
+    let map;
+    let userMarker;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 31.5204, lng: 74.3587},
+            zoom: 12
+        });
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(pos);
+                userMarker = new google.maps.Marker({
+                    position: pos,
+                    map: map,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: "#4285F4",
+                        fillOpacity: 1,
+                        strokeWeight: 2,
+                        strokeColor: "#FFFFFF",
+                    },
+                    title: "Vous êtes ici"
+                });
+            }, error => {
+                console.error(error);
+                alert("Erreur: Impossible d'obtenir votre position.");
+            });
+        } else {
+            alert("Erreur: Votre navigateur ne supporte pas la géolocalisation.");
+        }
+    }
+
+    document.getElementById('findFriends').addEventListener('click', () => {
+        // Simulation de la recherche d'amis
+        const friends = [
+            {name: "Alice", lat: 31.5304, lng: 74.3487, avatar: "https://example.com/alice.jpg"},
+            {name: "Bob", lat: 31.5104, lng: 74.3687, avatar: "https://example.com/bob.jpg"},
+            {name: "Charlie", lat: 31.5404, lng: 74.3387, avatar: "https://example.com/charlie.jpg"}
+        ];
+
+        friends.forEach(friend => {
+            const marker = new google.maps.Marker({
+                position: {lat: friend.lat, lng: friend.lng},
+                map: map,
+                icon: {
+                    url: friend.avatar,
+                    scaledSize: new google.maps.Size(40, 40),
+                    anchor: new google.maps.Point(20, 20)
+                },
+                title: friend.name
+            });
+
+            const infowindow = new google.maps.InfoWindow({
+                content: `<h3>${friend.name}</h3><p>Cliquez pour envoyer un message</p>`
+            });
+
+            marker.addListener('click', () => {
+                infowindow.open(map, marker);
+            });
+        });
+    });
+
+    document.getElementById('shareLocation').addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                map.setCenter(pos);
+                if (userMarker) {
+                    userMarker.setPosition(pos);
+                } else {
+                    userMarker = new google.maps.Marker({
+                        position: pos,
+                        map: map,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: "#4285F4",
+                            fillOpacity: 1,
+                            strokeWeight: 2,
+                            strokeColor: "#FFFFFF",
+                        },
+                        title: "Vous êtes ici"
+                    });
+                }
+                alert(`Votre position (${pos.lat}, ${pos.lng}) a été partagée avec vos amis !`);
+            }, error => {
+                console.error(error);
+                alert("Erreur: Impossible d'obtenir votre position.");
+            });
+        } else {
+            alert("Erreur: Votre navigateur ne supporte pas la géolocalisation.");
+        }
+    });
+
+    initMap();
+</script>
+</body>
+</html>
